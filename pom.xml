@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ticket</groupId>
-	<artifactId>ticket_consumer</artifactId>
+	<artifactId>ticket-consumer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ticket_consumer</name>
+	<name>ticket-consumer</name>
 	<description>Kafak consumer</description>
 	<url/>
 	<licenses>
