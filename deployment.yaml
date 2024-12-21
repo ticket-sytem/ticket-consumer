@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-system
+  namespace: kafka
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ticket-system
+  template:
+    metadata:
+      labels:
+        app: ticket-system
+    spec:
+      containers:
+        - name: ticket-consumer
+          image: luwenkai0820/ticket-consumer-kafka:latest
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-headless.kafka.svc.cluster.local:9092"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticket-system-consumer-service
+  namespace: kafka
+spec:
+  selector:
+    app: ticket-system
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+  type: NodePort
