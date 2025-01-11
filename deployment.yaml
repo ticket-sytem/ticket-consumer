@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ticket-system
+  name: ticket-consumer
   namespace: kafka
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: ticket-system
+      app: ticket-consumer
   template:
     metadata:
       labels:
-        app: ticket-system
+        app: ticket-consumer
     spec:
       containers:
         - name: ticket-consumer
@@ -29,11 +29,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ticket-system-consumer-service
+  name: ticket-consumer-service
   namespace: kafka
 spec:
   selector:
-    app: ticket-system
+    app: ticket-consumer
   ports:
     - protocol: TCP
       port: 8082

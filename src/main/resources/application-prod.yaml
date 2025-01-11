@@ -1,0 +1,9 @@
+spring:
+  cassandra:
+    contact-points: cassandra.kafka.svc.cluster.local
+    port: 9042
+    keyspace-name: my_keyspace
+    local-datacenter: datacenter1
+    schema-action: CREATE_IF_NOT_EXISTS
+    username: cassandra
+    password: xSSVe9Dy1m
