@@ -30,20 +30,8 @@ public class TicketConsumerApplication {
 	@Bean
 	public CommandLineRunner run() {
 		return args -> {
-			// Keep the application running and continuously receiving messages
-			while(true) {
-				try {
-					log.info("Waiting for receiver...");
-					// Wait for messages indefinitely
-					receiver.getLatch().await();
-					// Reset the latch for the next message
-					receiver.resetLatch();
-				} catch (InterruptedException e) {
-					log.error("Interrupted while waiting for messages", e);
-					Thread.currentThread().interrupt();
-					break;
-				}
-			}
+			// Keep the application running indefinitely
+			Thread.currentThread().join();
 		};
 	}
 }

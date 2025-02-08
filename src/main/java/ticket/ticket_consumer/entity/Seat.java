@@ -1,60 +1,38 @@
 package ticket.ticket_consumer.entity;
+
+
+import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.util.UUID;
 
-@Table
+@Table("seat")
 public class Seat {
-    @PrimaryKey
-    private UUID id;
-    private String area;
-    private int row;
-    private int column;
-    private int price;
-    private String status; //absent, occupied, purchased
-    private String campaignId;
 
-    public Seat(UUID id, String area, int row, int column, int price, String status, String campaignId) {
-        this.id = id;
-        this.area = area;
-        this.row = row;
-        this.column = column;
+    @PrimaryKey
+    private SeatKey key;
+    @Column(value = "price")
+    private int price;
+    @Column(value = "status")
+    private String status;
+    @Column(value = "id")
+    private UUID id;
+
+    public Seat(SeatKey key, int price, String status, UUID id) {
+        this.key = key;
         this.price = price;
         this.status = status;
-        this.campaignId = campaignId;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getArea() {
-        return area;
+    // Getters and Setters
+    public SeatKey getKey() {
+        return key;
     }
 
-    public void setArea(String area) {
-        this.area = area;
-    }
-
-    public int getRow() {
-        return row;
-    }
-
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    public int getColumn() {
-        return column;
-    }
-
-    public void setColumn(int column) {
-        this.column = column;
+    public void setKey(SeatKey key) {
+        this.key = key;
     }
 
     public int getPrice() {
@@ -73,11 +51,11 @@ public class Seat {
         this.status = status;
     }
 
-    public String getCampaignId() {
-        return campaignId;
+    public UUID getId() {
+        return id;
     }
 
-    public void setCampaignId(String campaignId) {
-        this.campaignId = campaignId;
+    public void setId(UUID id) {
+        this.id = id;
     }
 }

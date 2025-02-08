@@ -17,13 +17,52 @@ spec:
         - name: ticket-consumer
           image: luwenkai0820/ticket-consumer-kafka:latest
           imagePullPolicy: "Always"
-          ports:
-            - containerPort: 8082
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-headless.kafka.svc.cluster.local:9092"
+            - name: SPRING_KAFKA_CONSUMER_GROUP_ID
+              value: "ticket-consumer"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ticket-consumer
+  namespace: kafka
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ticket-consumer
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
 
 ---
 apiVersion: v1

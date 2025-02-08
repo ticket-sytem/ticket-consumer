@@ -1,0 +1,5 @@
+kubectl port-forward --namespace kafka svc/cassandra 9042:9042 &
+export CASSANDRA_PASSWORD=$(kubectl get secret --namespace "kafka" cassandra -o jsonpath="{.data.cassandra-password}" | base64 -d)
+cqlsh -u cassandra -p $CASSANDRA_PASSWORD 127.0.0.1 9042
+
+docker build -t luwenkai0820/ticket-consumer-kafka:latest . && docker push luwenkai0820/ticket-consumer-kafka:latest && k delete -f deployment.yaml &&  k apply -f deployment.yaml
