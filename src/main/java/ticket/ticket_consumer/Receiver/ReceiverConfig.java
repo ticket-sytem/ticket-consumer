@@ -1,8 +1,8 @@
 package ticket.ticket_consumer.Receiver;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -18,32 +18,33 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
+import org.apache.kafka.clients.consumer.CooperativeStickyAssignor;
 
 @Configuration
 @EnableKafka
 public class ReceiverConfig {
 
-    @Value("${spring.kafka.bootstrap-servers}")
+        @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
+
+    @Value("${spring.kafka.consumer.group-id}")
+    private String groupId;
 
     @Bean
     public Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "ticket-consumer");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        
-        // Increase timeouts to prevent unnecessary consumer group rebalancing
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "45000");
-        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, "10000");
-        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, "600000");
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "100");
-        
-        // Add these new configurations
+        // Enable manual acknowledgment
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "5000");
+        // Set the maximum number of records to fetch in a single poll
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "300");
+
+        // Add partition assignment strategy
+        props.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG,
+                 Collections.singletonList(CooperativeStickyAssignor.class));
 
         return props;
     }
@@ -70,16 +71,16 @@ public class ReceiverConfig {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
+        
+        // Set concurrency to match number of partitions
         factory.setConcurrency(3);
         factory.setBatchListener(false);
         
-        // Configure error handling
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
             new FixedBackOff(5000L, 5L)
         );
         factory.setCommonErrorHandler(errorHandler);
         
-        // Set AckMode before returning factory
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.getContainerProperties().setPollTimeout(5000);
         
